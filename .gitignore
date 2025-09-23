@@ -1,0 +1,84 @@
+# 编译产物
+*.exe
+*.o
+*.obj
+*.dll
+*.lib
+*.a
+*.so
+*.dylib
+
+# 数据库文件
+*.db
+*.sqlite
+*.sqlite3
+chat.db
+
+# 可执行文件
+oicq.exe
+oicq
+
+# IDE和编辑器文件
+.vscode/
+.vs/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.sln
+*.suo
+*.user
+*.aps
+*.pch
+*.vspscc
+*_i.c
+*_p.c
+*.ncb
+*.suo
+*.tlb
+*.tlh
+*.bak
+*.cache
+*.ilk
+*.log
+*.lib
+*.sbr
+*.scc
+[Bb]in/
+[Dd]ebug*/
+obj/
+[Rr]elease*/
+_ReSharper*/
+[Tt]est[Rr]esult*
+.vs/
+
+# 操作系统生成的文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 临时文件
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# 日志文件
+*.log
+
+# 编译缓存
+*.gch
+*.pch
+
+# 包管理
+node_modules/
+vendor/
+
+# 构建目录
+build/
+dist/
+out/
