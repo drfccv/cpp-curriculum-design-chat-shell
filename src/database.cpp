@@ -169,10 +169,36 @@ int Database::getUserId(const std::string& username) {
 bool Database::addFriend(const std::string& username, const std::string& friendName) {
     if (!userExists(friendName)) return false;
     
-    std::string sql = "INSERT OR IGNORE INTO friendships (user1, user2) VALUES (?, ?)";
+    // 检查是否已经是好友（双向检查）
+    std::string checkSql = "SELECT COUNT(*) FROM friendships WHERE (user1 = ? AND user2 = ?) OR (user1 = ? AND user2 = ?)";
+    sqlite3_stmt* checkStmt;
+    
+    int rc = sqlite3_prepare_v2(db, checkSql.c_str(), -1, &checkStmt, NULL);
+    if (rc != SQLITE_OK) return false;
+    
+    sqlite3_bind_text(checkStmt, 1, username.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(checkStmt, 2, friendName.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(checkStmt, 3, friendName.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(checkStmt, 4, username.c_str(), -1, SQLITE_STATIC);
+    
+    rc = sqlite3_step(checkStmt);
+    if (rc == SQLITE_ROW) {
+        int count = sqlite3_column_int(checkStmt, 0);
+        sqlite3_finalize(checkStmt);
+        if (count > 0) {
+            return false; // 已经是好友
+        }
+    } else {
+        sqlite3_finalize(checkStmt);
+        return false;
+    }
+    
+    // 添加好友关系（双向）
+    std::string sql = "INSERT INTO friendships (user1, user2) VALUES (?, ?)";
     sqlite3_stmt* stmt;
     
-    int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, NULL);
+    // 添加第一个方向的关系
+    rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, NULL);
     if (rc != SQLITE_OK) return false;
     
     sqlite3_bind_text(stmt, 1, username.c_str(), -1, SQLITE_STATIC);
@@ -181,16 +207,17 @@ bool Database::addFriend(const std::string& username, const std::string& friendN
     rc = sqlite3_step(stmt);
     sqlite3_finalize(stmt);
     
+    if (rc != SQLITE_DONE) return false;
+    
     // 添加反向关系
-    if (rc == SQLITE_DONE) {
-        rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, NULL);
-        if (rc == SQLITE_OK) {
-            sqlite3_bind_text(stmt, 1, friendName.c_str(), -1, SQLITE_STATIC);
-            sqlite3_bind_text(stmt, 2, username.c_str(), -1, SQLITE_STATIC);
-            sqlite3_step(stmt);
-            sqlite3_finalize(stmt);
-        }
-    }
+    rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, NULL);
+    if (rc != SQLITE_OK) return false;
+    
+    sqlite3_bind_text(stmt, 1, friendName.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, username.c_str(), -1, SQLITE_STATIC);
+    
+    rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
     
     return rc == SQLITE_DONE;
 }

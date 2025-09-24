@@ -204,10 +204,27 @@ void UI::handleDeleteUser() {
 void UI::handleAddFriend() {
     std::cout << "========== 添加好友 ==========" << std::endl;
     std::string friendName = getInput("请输入要添加的好友用户名: ");
+    
+    // 检查是否尝试添加自己
+    if (friendName == currentUser->username) {
+        std::cout << "不能添加自己为好友！" << std::endl;
+        pauseScreen();
+        return;
+    }
+    
+    // 检查用户是否存在
+    Database* db = Database::getInstance();
+    if (!db->userExists(friendName)) {
+        std::cout << "用户不存在！请确认用户名是否正确。" << std::endl;
+        pauseScreen();
+        return;
+    }
+    
+    // 尝试添加好友
     if (currentUser->addFriend(friendName)) {
         std::cout << "好友添加成功！" << std::endl;
     } else {
-        std::cout << "好友添加失败！用户可能不存在或已是好友。" << std::endl;
+        std::cout << "好友添加失败！该用户已经是您的好友。" << std::endl;
     }
     pauseScreen();
 }
@@ -240,10 +257,25 @@ void UI::handleRemoveFromGroup() {
     std::string groupName = getInput("请输入群组名称: ");
     std::string adminPassword = getPassword("请输入管理员密码 (如果您是群创建者请随意输入): ");
     
+    // 检查用户和群组是否存在
+    Database* db = Database::getInstance();
+    if (!db->userExists(targetUser)) {
+        std::cout << "目标用户不存在！" << std::endl;
+        pauseScreen();
+        return;
+    }
+    
+    // 检查是否有权限
+    if (!db->isGroupCreator(currentUser->username, groupName) && !User::verifyAdminPassword(adminPassword)) {
+        std::cout << "权限不足！只有群创建者或系统管理员可以移除群成员！" << std::endl;
+        pauseScreen();
+        return;
+    }
+    
     if (currentUser->removeUserFromGroup(targetUser, groupName, adminPassword)) {
-        std::cout << "用户移除成功！" << std::endl;
+        std::cout << "用户 " << targetUser << " 已从群 " << groupName << " 中移除！" << std::endl;
     } else {
-        std::cout << "用户移除失败！请检查权限和输入信息。" << std::endl;
+        std::cout << "用户移除失败！用户可能不在该群组中。" << std::endl;
     }
     pauseScreen();
 }

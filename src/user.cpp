@@ -75,22 +75,14 @@ bool User::addFriend(const std::string& friendUsername) {
     Database* db = Database::getInstance();
     
     if (friendUsername == this->username) {
-        std::cout << "不能添加自己为好友！" << std::endl;
         return false;
     }
     
     if (!db->userExists(friendUsername)) {
-        std::cout << "用户不存在！" << std::endl;
         return false;
     }
     
-    if (db->addFriend(this->username, friendUsername)) {
-        std::cout << "好友添加成功！" << std::endl;
-        return true;
-    } else {
-        std::cout << "好友添加失败或已经是好友！" << std::endl;
-        return false;
-    }
+    return db->addFriend(this->username, friendUsername);
 }
 
 std::vector<std::string> User::getFriends() {
@@ -101,25 +93,13 @@ std::vector<std::string> User::getFriends() {
 bool User::createGroup(const std::string& groupName) {
     Database* db = Database::getInstance();
     
-    if (db->createGroup(groupName, this->username)) {
-        std::cout << "群组创建成功！" << std::endl;
-        return true;
-    } else {
-        std::cout << "群组创建失败或群名已存在！" << std::endl;
-        return false;
-    }
+    return db->createGroup(groupName, this->username);
 }
 
 bool User::joinGroup(const std::string& groupName) {
     Database* db = Database::getInstance();
     
-    if (db->joinGroup(this->username, groupName)) {
-        std::cout << "加入群组成功！" << std::endl;
-        return true;
-    } else {
-        std::cout << "加入群组失败或已在群中！" << std::endl;
-        return false;
-    }
+    return db->joinGroup(this->username, groupName);
 }
 
 std::vector<std::string> User::getGroups() {
@@ -143,15 +123,8 @@ bool User::removeUserFromGroup(const std::string& targetUser, const std::string&
     }
     
     if (!hasPermission) {
-        std::cout << "权限不足！只有群创建者或系统管理员可以移除群成员！" << std::endl;
         return false;
     }
     
-    if (db->removeFromGroup(targetUser, groupName)) {
-        std::cout << "用户 " << targetUser << " 已从群 " << groupName << " 中移除！" << std::endl;
-        return true;
-    } else {
-        std::cout << "移除用户失败！" << std::endl;
-        return false;
-    }
+    return db->removeFromGroup(targetUser, groupName);
 }
